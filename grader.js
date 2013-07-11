@@ -62,14 +62,33 @@ var clone = function(fn) {
     return fn.bind({});
 };
 
+var checkurl = function(url, checksfile) {
+    rest.get(url).on('complete', function(data, result) {
+	if(result instanceof Error) {
+	    console.log("Error url does not exist.", url)
+	    process.exit(1);
+	} else {
+	    var checkJson = checkHtmlFile(data, checksfile);
+	    var outJson = JSON.stringify(checkJson, null, 4);
+	}
+    });
+     console.log(outJson);
+};
+
+
 if (require.main == module) {
     program
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
+	.option('-u, --url <html_url>', 'Path to URL')
         .parse(process.argv);
-    var checkJson = checksHtmlFile(program.file, program.checks);
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
+    if(process.url) {
+	checkurl(process.url, program.checks);
+    } else {
+	var checkJson = checksHtmlFile(program.file, program.checks);
+	var outJson = JSON.stringify(checkJson, null, 4);
+	console.log(outJson);
+    }
 } else {
     exports.checksHtmlFile = checksHtmlFile;
 }
